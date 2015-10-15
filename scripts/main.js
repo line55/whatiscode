@@ -95,11 +95,11 @@ function highlightTooltip(e) {
   var codeClasses = {
     "hljs-keyword": "Language keywords mean something special in the language.",
     "hljs-number": "A number",
-    "hljs-title": "A title names something, like a function in C or element in XML",
+    "hljs-title": "A title names something, like a function in C or an element in XML",
     "hljs-params": "The parameters that get passed to the function",
     "hljs-function": "A function declaration",
     "hljs-built_in": "A built-in function",
-    "hljs-string": "This is a string; it may mean something to you, but to the computer it's pretty much just an arbitrary sequence of letters.",
+    "hljs-string": "This is a string; it may mean something to you, but to the computer it’s pretty much just an arbitrary sequence of letters.",
     "hljs-list": "A list",
     "hljs-tag": "A tag",
     "hljs-attribute": "The name of an attribute",
@@ -121,11 +121,12 @@ function highlightTooltip(e) {
 }
 
 
-function footnotes() {
+function footnotes() { 
+  var isMobile = innerWidth < 800
 
   // read footnotes out of footer and stick into hidden popup divs
-  (function() {
-    var footrefs = $(".footref").unwrap();
+  !(function() {
+    var footrefs = $(".footref:not(.correx)").unwrap();
     var footnotes = $(".footdef");
     footnotes.each(function(i, fn) {
       var fnId = $(fn).find("a").eq(0).attr("id").split(".")[1];
@@ -153,23 +154,22 @@ function footnotes() {
 
   function showFootnote(d,i) {
     var popup = d3.select(this.parentElement).select(".fn-popup");
-    if(!popup.classed("stick")) {
+    if(!popup.classed("stick") || isMobile) {
       popup
         .style("opacity", 0)
         .style("display", "block")
-        .transition()
-        .duration(300)
+        .transition().duration(300)
         .style("opacity", 1);
     }
 
      d3.select(this.parentElement)
-         .style('position', innerWidth < 800 ? 'static' : 'relative')
+         .style('position', isMobile ? 'static' : 'relative')
 
      var bb = this.getBoundingClientRect()
-     if (innerWidth < 800){
+     if (isMobile){
        popup
-           .style('top', bb.top + scrollY + 'px')
-           .style('left', innerWidth/2 + 150/4 + 'px')
+           .style('top', bb.top + scrollY + 20 + 'px')
+           .style('left', 160 + 'px')
      } else{
       popup
           .style('top', '')
@@ -183,22 +183,21 @@ function footnotes() {
     var popup = d3.select(this.parentElement).select(".fn-popup");
     if(!popup.classed("stick")) {
       popup
-        .transition()
-        .duration(300)
+        .transition().duration(300)
         .style("opacity", 0)
-        .transition()
+        .transition().duration(0)
         .style("display", "none");
-      return;
-    } else {
-      return;
-    }
+    } 
   }
 
   // toggle stickiness
   function toggleFootnote(d,i) {
     d3.event.preventDefault();
     var popup = d3.select(this.parentElement).select(".fn-popup")
-    popup.classed("stick", !popup.classed("stick"));
+    var isStuck = !popup.classed("stick");
+    d3.select(this).classed("stick", isStuck);
+    popup.classed("stick", isStuck);
+    popup.classed("stick") ? showFootnote.call(this) : hideFootnote.call(this)
   }
 
 }
